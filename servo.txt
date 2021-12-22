@@ -1,0 +1,103 @@
+import RPi.GPIO as GPIO
+import time
+
+servoPIN = 25
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(servoPIN, GPIO.OUT)
+
+
+
+p = GPIO.PWM(servoPIN, 50) # GPIO 25 for PWM with 50Hz
+p.start(2.5) # Initialization
+try:
+  while True:
+    p.ChangeDutyCycle(7.5)
+    time.sleep(0.5)
+    p.ChangeDutyCycle(12.5)
+    time.sleep(0.5)
+    p.ChangeDutyCycle(7.5)
+    time.sleep(0.5)
+    p.ChangeDutyCycle(2.5)
+    time.sleep(0.5)
+  
+    
+except KeyboardInterrupt:
+  p.stop()
+  GPIO.cleanup()
+
+
+
+
+
+#!/usr/bin/python
+import RPi.GPIO as GPIO
+import time
+
+channel = 17
+servoPIN = 25
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(channel, GPIO.IN)
+GPIO.setup(servoPIN, GPIO.OUT)
+p = GPIO.PWM(servoPIN, 50) # GPIO 25 for PWM with 50Hz
+p.start(7.5) # Initialization
+def callback(channel,servoPIN):
+        if GPIO.input(channel):
+                p.ChangeDutyCycle(12.5)
+                
+        else:
+               p.ChangeDutyCycle(7.5) 
+                  
+GPIO.add_event_detect(channel, GPIO.BOTH, bouncetime=300)  # let us know when the pin goes HIGH or LOW
+GPIO.add_event_callback(channel, callback)  # assign function to GPIO PIN, Run function on change
+# infinite loop
+while True:
+        time.sleep(0.5)
+
+	
+
+import RPi.GPIO as GPIO
+import time
+
+# Global variable
+LED_STATE = False
+
+# Pin Declaration
+greenLEDPin = 12
+soundSensorPin =17 
+
+# GPIO Settings
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(soundSensorPin, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+GPIO.setup(greenLEDPin, GPIO.OUT, initial = GPIO.LOW)
+
+def soundSensorHandler(argument):
+    global LED_STATE
+    endTime = int(round(time.time() * 1000)) + int(500)
+    currentTime = int(round(time.time() * 1000))
+    soundPeak = 1
+    GPIO.remove_event_detect(soundSensorPin)
+    while(currentTime <= endTime):
+        if GPIO.input(soundSensorPin):
+            soundPeak = soundPeak + 1
+            time.sleep(0.1)
+            print ('soundPeak')
+        currentTime = int(round(time.time() * 1000))
+    if soundPeak >= 6:
+        if LED_STATE:
+            GPIO.output(greenLEDPin, GPIO.LOW)
+            print ('Turned of LED')
+            LED_STATE = False
+        else:
+            GPIO.output(greenLEDPin,GPIO.HIGH)
+            print ('Turned On LED')
+            LED_STATE = True
+    else:
+        print ('No Sound Detected')
+
+    GPIO.add_event_detect(soundSensorPin, GPIO.RISING, callback=soundSensorHandler, bouncetime=300)
+
+GPIO.add_event_detect(soundSensorPin, GPIO.RISING, callback=soundSensorHandler, bouncetime = 300)
+
+while True:
+        time.sleep(5)
+	
